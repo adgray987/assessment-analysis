@@ -1,23 +1,23 @@
 ### assessment-analysis.R
+
+#----Set up environment and load data----
 library(tidyverse)
 library(viridisLite)
 
-assessment_file_path <- "[path to report csv]"
+setwd("/Users/gray/Documents/Adam Gray sole proprietorship/NAA/Assessment/assessment-analysis")
+
+assessment_file_path <- "raw_data/job_20326_assessment_list_report_2020-03-10.csv"
 
 assessment <- read_csv(assessment_file_path, skip = 2)
 
 assessment <- read_csv(assessment_file_path, skip = 2, guess_max = nrow(assessment))
 
-#Get total assessments
-#Since there is a many-to-many relationship between resources and assessments,
-#assessments with n resources attached will be counted n times
+#Count total records assessed. Assessments with n records attached will be counted n times.
 at <- nrow(assessment)
 
-#----
+#----Sum observations in the existing description section----
 
-#Sum the observations in the "Existing Description" section
-
-#Administrative/custodial control
+#Administrative/custodial control subset
 count_appraisal <- assessment %>%
   count(appraisal) %>% 
   select(count = n, "Appraisal" = appraisal) %>% 
@@ -52,9 +52,9 @@ count_total_admin <- bind_rows(count_appraisal, count_deed_of_gift, count_contro
   filter(exists == "Yes") %>% 
   arrange(desc(count))
 
-#Plot the counts for 'Existing Description'
+#Plot the counts for admin control
 admin_chart <- ggplot(count_total_admin, aes(x = reorder(type, -portion), y= portion, fill = exists)) +
-  ggtitle("Administrative and Custodial Control") +
+  ggtitle("Administrative Control") +
   geom_bar(aes(y = portion), stat = "identity", width = .50, show.legend = FALSE) +
   scale_fill_viridis_d() +
   theme(plot.title = element_text(hjust = .50), 
@@ -62,8 +62,7 @@ admin_chart <- ggplot(count_total_admin, aes(x = reorder(type, -portion), y= por
   scale_y_continuous(labels = scales::percent) + 
   labs(x = element_blank(), y = element_blank())
 
-#----
-#Intellectual control
+#Intellectual control subset
 count_catalog_record <- assessment %>%
   count(catalog_record) %>% 
   select(count = n, "Catalog Record" = catalog_record) %>% 
@@ -117,7 +116,7 @@ count_total_intel <- bind_rows(count_catalog_record,
 
 #Plot the counts for intellectual control
 intel_chart <- ggplot(count_total_intel, aes(x = reorder(type, -portion), y= portion, fill = exists)) +
-  ggtitle("Existing Description\nand Intellectual Control") +
+  ggtitle("Intellectual Control") +
   geom_bar(aes(y = portion), stat = "identity", width = .50, show.legend = FALSE) +
   scale_fill_viridis_d() +
   theme(plot.title = element_text(hjust = .50), 
@@ -125,8 +124,8 @@ intel_chart <- ggplot(count_total_intel, aes(x = reorder(type, -portion), y= por
   scale_y_continuous(labels = scales::percent) + 
   labs(x = element_blank(), y = element_blank())
 
-#----
-#Sum the observations in the "Ratings" section
+
+#----Sum observations in the ratings section----
 
 count_int_access <- assessment %>%
   filter(!is.na(intellectual_access_description_rating)) %>% 
@@ -179,7 +178,6 @@ count_housing_quality <- assessment %>%
 total_ratings <- bind_rows(count_interest, count_doc_qual, 
                                  count_int_access, count_phys_cond, 
                                  count_housing_quality, count_phys_acc)
-  
 
 #Plot the counts for ratings
 ratings_chart <- ggplot(total_ratings, 
@@ -187,23 +185,73 @@ ratings_chart <- ggplot(total_ratings,
   geom_bar(position = position_fill(), stat = "identity") +
   scale_fill_viridis_d(name = "Rating", direction = -1) +
   scale_y_continuous(labels = scales::percent) +
-  ggtitle("Appraisal and Access Ratings") +
+  ggtitle("Access, Condition, and Value") +
   theme(plot.title = element_text(hjust = .50), 
         axis.text.x = element_text(angle = 90, vjust = .50, hjust = 1)) +
   guides(fill = guide_legend()) +
   labs(x = element_blank(), y = element_blank())
 
-#----
-#Save data to file
-dir.create("[path for data]")
-setwd("[path for output data]")
+#----Get records that meet specific criteria----
+base_columns <- c("linked_records_record_id", "linked_records_record_title",
+                     "linked_records_identifier", "general_assessment_note")
+
+poor_condition <- assessment %>% 
+  filter(physical_condition_rating <= 2) %>% 
+  select(base_columns,
+         physical_condition_note,
+         physical_condition_rating)
+
+high_research_low_int_access <- assessment %>% 
+  filter(research_value_rating >= 8, intellectual_access_description_rating <= 2) %>% 
+  select(base_columns,
+         intellectual_access_description_note,
+         physical_access_arrangement_note,
+         documentation_quality_note,
+         interest_note)
+
+high_research_low_phys_access <- assessment %>% 
+  filter(research_value_rating >= 8, physical_access_arrangement_rating <= 2) %>% 
+  select(base_columns,
+         physical_access_arrangement_note,
+         intellectual_access_description_note,
+         documentation_quality_note,
+         interest_note)
+
+has_nitrate <- assessment %>% 
+  filter(nitrate == "Yes") %>% 
+  select(base_columns,
+         nitrate,
+         conservation_note,
+         physical_condition_note,
+         physical_condition_rating)
+
+
+#----Save data and figures to file----
+#BELOW IS INTERNAL
+dir.create("data")
+setwd("data")
+#ABOVE IS INTERNAL
+
+# dir.create("[path for data]")
+# setwd("[path for output data]")
+
 write_csv(count_total_intel, "intellectual_control.csv")
 write_csv(count_total_admin, "admin_control.csv")
 write_csv(total_ratings, "assessment_ratings.csv")
 
-#Save figures to file
-dir.create("[path for figs]")
-setwd("[path for figs]")
+write_csv(poor_condition, "poor_condition.csv")
+write_csv(high_research_low_int_access, "high_research_low_int_access.csv")
+write_csv(high_research_low_phys_access, "high_research_low_phys_access.csv")
+write_csv(has_nitrate, "has_nitrate.csv")
+
+#BELOW IS INTERNAL
+dir.create("../figs")
+setwd("../figs")
+#ABOVE IS INTERNAL
+
+# dir.create("[path for figs]")
+# setwd("[path for figs]")
+
 ggsave("intel_chart.png", intel_chart)
 ggsave("admin_chart.png", admin_chart)
 ggsave("ratings_chart.png", ratings_chart)
