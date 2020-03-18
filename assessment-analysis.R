@@ -4,9 +4,9 @@
 library(tidyverse)
 library(viridisLite)
 
-setwd("/Users/gray/Documents/Adam Gray sole proprietorship/NAA/Assessment/assessment-analysis")
+setwd(".../assessment-analysis")
 
-assessment_file_path <- "raw_data/job_20326_assessment_list_report_2020-03-10.csv"
+assessment_file_path <- "raw_data/job....csv"
 
 assessment <- read_csv(assessment_file_path, skip = 2)
 
