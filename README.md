@@ -13,7 +13,7 @@ pose challenges to users wishing to make the most of their assessment
 data. This script aims to support the leveraging of assessment data by
 making it possible to:
 
-1)  get “big picture” views of assessment data by counting and creating
+1)  get “big picture” views of the assessment data by summarizing and creating
     plots for key variables and
 2)  find assessment records that meet specific criteria and write them
     to a new file
@@ -21,10 +21,6 @@ making it possible to:
 ...without combing through the .csv in a spreadsheet application. It can be
 easily modified to suit individual circumstances.
 
-I began working on this project when I was looking for an efficient way
-to examine assessment data while working as a project archivist. At the
-same time, it provided the impetus for me to get my feet wet with data
-exploration and plotting in R.
 
 ## Example Outputs
 
@@ -41,7 +37,7 @@ exploration and plotting in R.
 
 ![](README_files/figure-gfm/unnamed-chunk-2-1.png)<!-- -->
 
-### Generate counts for ratings
+### Generate counts for each rating
 
 | count | category              | rating | portion |
 | ----: | :-------------------- | -----: | ------: |
