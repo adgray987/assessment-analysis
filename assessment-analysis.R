@@ -227,11 +227,6 @@ has_nitrate <- assessment %>%
 
 
 #----Save data and figures to file----
-#BELOW IS INTERNAL
-dir.create("data")
-setwd("data")
-#ABOVE IS INTERNAL
-
 # dir.create("[path for data]")
 # setwd("[path for output data]")
 
@@ -244,10 +239,6 @@ write_csv(high_research_low_int_access, "high_research_low_int_access.csv")
 write_csv(high_research_low_phys_access, "high_research_low_phys_access.csv")
 write_csv(has_nitrate, "has_nitrate.csv")
 
-#BELOW IS INTERNAL
-dir.create("../figs")
-setwd("../figs")
-#ABOVE IS INTERNAL
 
 # dir.create("[path for figs]")
 # setwd("[path for figs]")
